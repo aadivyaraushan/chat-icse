@@ -1,137 +1,51 @@
-# imports
-from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
-from langchain.document_loaders import TextLoader
-from langchain.document_loaders import PyPDFLoader
-from langchain.indexes import VectorstoreIndexCreator
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from langchain.prompts import PromptTemplate
-import panel as pn
-import os
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.llms import OpenAI
+from langchain.chains import ConversationalRetrievalChain
+from langchain.document_loaders import PyPDFLoader
+from langchain.memory import ConversationBufferMemory
 
-# getting api key
-OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
+loader = PyPDFLoader('./temp.pdf')
+# loader becomes function to load temp.pdf
+documents = loader.load()
+# loader.load() basically means "load the file passed as parameter to PyPDFLoader" (which here is temp.pdf)
+# you can't directly do pdf.load() because files in python don't have a function for loading as langchain.schema files
+# langchain.schema.Document files are special because they have extra features useful for NLP, like metadata about files
 
-# setting up widgets
-file_input = pn.widgets.FileInput(width=300)
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+# chunk here represents a segment of text from the document
+# chunk size here represents number of characters
+# chunk_overlap represents the number of characters to overlap between adjacent chunks i.e. how much context to share
+# between chunks
+# the document is split into chunks to make it easier to analyse
+# text_splitter basically becomes a function that splits a document into chunks of 1000 characters with no overlap
+documents_chunks = text_splitter.split_documents(documents)  # this just splits the document
+# documents now stores chunks of the document
 
-prompt = pn.widgets.TextEditor(
-    value="",
-    placeholder="Enter your questions here...",
-    height=160,
-    toolbar=False
-)
+vector_store_database = Chroma.from_documents(documents_chunks, OpenAIEmbeddings())
+# OpenAIEmbeddings() creates a class that implements the embed method
+# the embed method converts chunks of the document (documents) into vector database items
+# by making them into vector database items, you can more easily search over the items
 
-run_button = pn.widgets.Button(
-    name="Run"
-)
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+# memory in langchain basically means the ability to remember things that happened earlier in a conversation
+# ConversationBufferMemory stores all available messages in the conversation as context
 
-select_chunks = pn.widgets.IntSlider(
-    name="Number of relevant chunks",
-    start=1,
-    end=5,
-    step=1,
-    value=2
-)
+answer_question = ConversationalRetrievalChain.from_llm(OpenAI(temperature=0), vector_store_database.as_retriever(),
+                                                        memory=memory)
+# ConversationalRetrievalChain is a retrieval system that retrieves information from vector databases for a certain
+# query based on a ton of filters like importance, context-aware filtering, etc
+# therefore, it can be used for question answering based on a vector
+# since it's context aware and relies on context, it's useful for "Chat"
+# here question_answering basically becomes a function to answer questions given
 
-select_chain_type = pn.widgets.RadioButtonGroup(
-    name='Chain type',
-    options=[
-        'stuff',
-        'map_reduce',
-        'refine',
-        'map_rerank'
-    ]
-)
+while True:
+    query = input("What's your question? (enter q to exit)\n")
 
-widgets = pn.Row(
-    pn.Column(prompt, run_button, margin=5),
-    pn.Card(
-        'Chain type:',
-        pn.Column(select_chain_type, select_chunks),
-        title='Advanced settings', margin=10
-    ), width=400
-)
+    if query == 'q':
+        break
 
-conversations = []
+    result = answer_question({"question": query})
 
-
-def qa(file, query: str, chain_type: str, k: int):
-    # load document
-    loader = PyPDFLoader(file)
-    documents = loader.load()
-    # split into chunks
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-    texts = text_splitter.split_documents(documents)
-    # select embeddings to use
-    embeddings = OpenAIEmbeddings()
-    # create the vectorstore to use as the index
-    db = Chroma.from_documents(texts, embeddings)
-    # expose this index in a retriever interface
-    retriever = db.as_retriever(search_type='similarity', search_kwargs={'k': k})
-    prompt_template = """Use the following pieces of context to answer the question at the end. If you don't know the 
-    answer, just say that you don't know, don't try to make up an answer.
-    
-    {context}
-    
-    Question: {question}
-    Answer:"""
-    PROMPT = PromptTemplate(
-        template=prompt_template, input_variables=['context', 'question']
-    )
-    chain_type_kwargs = {'prompt': PROMPT}
-    qa = RetrievalQA.from_chain_type(
-        llm=OpenAI(model_name='gpt-3.5-turbo'), chain_type=chain_type, retriever=retriever, return_source_documents=True,
-        chain_type_kwargs=chain_type_kwargs)
-    result = qa({'query': query})
-    print(result['result'])
-    return result
-
-
-def qa_result(_):
-    if file_input.value is not None:
-        file_input.save('temp.pdf')
-
-        if prompt.value:
-            result = qa('temp.pdf',
-                        query=prompt.value,
-                        chain_type=select_chain_type.value,
-                        k=select_chunks.value)
-            conversations.extend([
-                pn.Row(
-                    pn.panel("\U0001F60A", width=10),
-                    prompt.value,
-                    width=600
-                ),
-                pn.Row(
-                    pn.panel("\U0001F916", width=10),
-                    pn.Column(
-                        result['result'],
-                        'Relevant source text:',
-                        pn.pane.Markdown(
-                            '\n--------------------------------------------------------------------\n'.join(
-                                doc.page_content for doc in result["source_documents"]))
-                    )
-                )
-            ])
-
-    return pn.Column(*conversations, margin=15, width=575, min_height=400)
-
-
-qa_interactive = pn.panel(
-    pn.bind(qa_result, run_button),
-    loading_indicator=True
-)
-
-output = pn.WidgetBox('*Output will show up here:*', qa_interactive, width=630, scroll=True)
-
-pn.Column(
-    pn.pane.Markdown("""
-    Step 1: Upload a PDF file \n 
-    Step 2: Enter your OpenAI API key. It will not be stored permanently.
-    Step 3: Type your question at the bottom and click "Run" \n
-    """),
-    pn.Column(file_input, OPENAI_API_KEY, output, widgets)
-).servable()
+    print("\nAnswer: {}".format(result['answer']))
