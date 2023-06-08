@@ -1,12 +1,13 @@
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain.vectorstores import Chroma, VectorStore
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.llms import OpenAI
 from langchain.chains import ConversationalRetrievalChain
-from langchain.document_loaders import PyPDFLoader
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.memory import ConversationBufferMemory
 
-loader = PyPDFLoader('./temp.pdf')
+
+loader = PyPDFDirectoryLoader('./sources')
 # loader becomes function to load temp.pdf
 documents = loader.load()
 # loader.load() basically means "load the file passed as parameter to PyPDFLoader" (which here is temp.pdf)
@@ -28,11 +29,16 @@ vector_store_database = Chroma.from_documents(documents_chunks, OpenAIEmbeddings
 # the embed method converts chunks of the document (documents) into vector database items
 # by making them into vector database items, you can more easily search over the items
 
+
+
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 # memory in langchain basically means the ability to remember things that happened earlier in a conversation
 # ConversationBufferMemory stores all available messages in the conversation as context
 
-answer_question = ConversationalRetrievalChain.from_llm(OpenAI(temperature=0), vector_store_database.as_retriever(),
+answer_question = ConversationalRetrievalChain.from_llm(ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo',
+                                                                   max_tokens=1000),
+                                                        vector_store_database.as_retriever(search_kwargs={"k": 1}),
+                                                        max_tokens_limit=4097,
                                                         memory=memory)
 # ConversationalRetrievalChain is a retrieval system that retrieves information from vector databases for a certain
 # query based on a ton of filters like importance, context-aware filtering, etc
