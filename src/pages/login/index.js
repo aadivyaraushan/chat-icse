@@ -32,7 +32,7 @@ export default function LogIn() {
       setError(`${error.message.substring(10)}`);
     }
     if (!errorThrown) {
-      router.push('app');
+      router.push('subjects');
     }
   };
 

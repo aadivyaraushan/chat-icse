@@ -30,7 +30,7 @@ export default function SignUp() {
     }
 
     if (!errorThrown) {
-      router.push('app');
+      router.push('subjects');
     }
   };
 

@@ -1,14 +1,21 @@
+import ChatPane from '@/components/ChatPane';
+import SendMessage from '@/components/SendMessage';
 import Sidebar from '@/components/Sidebar';
 import { Inter } from 'next/font/google';
+// import dynamic from 'next/dynamic';
+import TextbookPane from '@/components/TextbookPane';
 const inter = Inter({ subsets: ['latin'] });
 
 const App = () => {
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-center p-24 text-white text-2xl bg-black ${inter.className}`}
-    >
+    <div className='bg-black text-white flex flex-row w-screen h-screen'>
       <Sidebar />
-    </main>
+      <div className='flex flex-col w-full   '>
+        <ChatPane />
+        <SendMessage />
+      </div>
+      <TextbookPane />
+    </div>
   );
 };
 
