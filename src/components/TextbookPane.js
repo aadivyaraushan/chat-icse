@@ -1,3 +1,4 @@
+'use client';
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
 const TextbookPane = () => {
@@ -12,9 +13,6 @@ const TextbookPane = () => {
 
   useEffect(() => {
     window.addEventListener('mousemove', (e) => {
-      console.log('mouse moving');
-      console.log('movement of x: ', e.movementX);
-      console.log('hidden: ', hidden.current);
       if (!isResizing.current) {
         return;
       }
@@ -26,14 +24,11 @@ const TextbookPane = () => {
     });
 
     window.addEventListener('mouseup', () => {
-      console.log('mouse up');
       isResizing.current = false;
     });
   }, []);
 
   useEffect(() => {
-    console.log('WIDTH: ', width);
-
     if (width === minWidth) {
       setHidden(true);
     } else {
@@ -50,7 +45,6 @@ const TextbookPane = () => {
       <button
         className=' bg-zinc-100 m-1 w-2 h-10 rounded-xl'
         onMouseDown={() => {
-          console.log('mouse down');
           isResizing.current = true;
         }}
       ></button>

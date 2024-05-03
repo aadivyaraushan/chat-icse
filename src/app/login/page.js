@@ -1,13 +1,14 @@
+'use client';
 import Image from 'next/image';
 import { Inter } from 'next/font/google';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { app } from '../../firebase';
+import { app } from '../../lib/firebase';
 
 const inter = Inter({ subsets: ['latin'] });
 

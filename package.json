@@ -2,6 +2,7 @@
   "name": "chatbot_tutor",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://localhost:5000",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,18 +10,27 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^0.0.9",
+    "@ai-sdk/openai": "^0.0.9",
+    "@anthropic-ai/sdk": "^0.20.8",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/free-regular-svg-icons": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@langchain/anthropic": "^0.1.16",
+    "@langchain/openai": "^0.0.28",
     "@react-pdf-viewer/core": "^3.12.0",
+    "ai": "^3.1.1",
+    "create-next-app": "^14.2.3",
     "firebase": "^10.10.0",
-    "next": "14.1.4",
+    "langchain": "^0.1.36",
+    "next": "14.2.3",
     "pdfjs-dist": "^3.4.120",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-pdf": "^7.7.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-pdf": "^7.7.1",
+    "zod": "^3.23.5"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",

@@ -1,5 +1,6 @@
+'use client';
 import { Inter } from 'next/font/google';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import AddSubjectModal from '@/components/AddSubjectModal';
 import { useState } from 'react';
 const inter = Inter({ subsets: ['latin'] });
@@ -9,7 +10,7 @@ const Subjects = () => {
   const [showModal, setShowModal] = useState(false);
 
   const onSubmit = async (subject) => {
-    router.push('app');
+    router.push('chat');
   };
 
   return (

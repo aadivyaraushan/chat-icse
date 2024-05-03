@@ -1,3 +1,4 @@
+'use client';
 import Message from './Message';
 
 const ChatPane = () => {

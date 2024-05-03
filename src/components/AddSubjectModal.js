@@ -1,11 +1,10 @@
+'use client';
 import { useEffect, useState } from 'react';
 
 const AddSubjectModal = ({ showModal, setShowModal }) => {
   const [hasSlot, setHasSlot] = useState(true);
 
-  useEffect(() => {
-    console.log(showModal);
-  }, [showModal]);
+  useEffect(() => {}, [showModal]);
   return (
     <>
       {showModal ? (
