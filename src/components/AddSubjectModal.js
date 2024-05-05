@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState, useRef } from 'react';
 import { app } from '@/lib/firebase';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 
 const AddSubjectModal = ({ showModal, setShowModal }) => {
   const [hasSlot, setHasSlot] = useState(true);
@@ -18,6 +19,7 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const db = getFirestore(app);
   const auth = getAuth(app);
+  const analytics = getAnalytics(app);
 
   const onSubmit = async () => {
     // create new starter conversation
@@ -45,6 +47,9 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
         'document added for new conversation in subject: ',
         docRef.id
       );
+      logEvent(analytics, 'subject_conversation_created', {
+        subject,
+      });
 
       // add subject to user's subjects data
 

@@ -16,7 +16,9 @@ import { auth } from '../lib/firebase';
 import { useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { onSnapshot } from 'firebase/firestore';
+import { logEvent } from 'firebase/analytics';
 import useDebounce from '@/hooks/useDebounce';
+import { getAnalytics } from 'firebase/analytics';
 
 const Sidebar = ({ subject }) => {
   const [width, setWidth] = useState(240);
@@ -30,6 +32,7 @@ const Sidebar = ({ subject }) => {
   const router = useRouter();
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const analytics = getAnalytics(app);
 
   useEffect(() => {
     window.addEventListener('mousemove', (e) => {
@@ -58,6 +61,9 @@ const Sidebar = ({ subject }) => {
       hasQuestionImage: false,
     });
     console.log('document added with ID: ', docRef.id);
+    logEvent(analytics, 'subject_conversation_created', {
+      subject,
+    });
     router.push(`/chat/${subject}/${docRef.id}/false`);
   };
 

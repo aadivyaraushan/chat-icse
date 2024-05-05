@@ -32,12 +32,14 @@ import {
 } from 'firebase/storage';
 import { useRouter } from 'next/navigation';
 import { setLayerDimensions } from 'pdfjs-dist';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 const inter = Inter({ subsets: ['latin'] });
 
 const App = ({ params }) => {
   const subject = params.subject;
   const id = params.id;
   const isVariation = params.isVariation;
+  const analytics = getAnalytics(app);
   const [questionShown, setQuestionShown] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [imageData, setImageData] = useState(null);
@@ -95,7 +97,7 @@ const App = ({ params }) => {
                 type: 'text',
                 text: `
                 Transcribe the image given and convert it to text. Use the following procedure:
-                1. Under the heading 'question', describe the question text given in the image.
+                1. Under the heading 'question', describe the question text given in the image. Transcribe the instructions given to the student as a part of the question.
                 2. Under the heading 'transcription', if there are any graphs or drawings given, describe them in detail. `,
               },
               { type: 'image', image: imageBuffer },
@@ -309,6 +311,10 @@ const App = ({ params }) => {
 
       const prevDoc = await getDoc(doc(db, 'chats', id));
       const topic = prevDoc.data().topic;
+
+      logEvent(analytics, 'variation_generated', {
+        type: difficulty,
+      });
 
       const variationChat = await addDoc(collection(db, 'chats'), {
         messages: [
@@ -535,7 +541,7 @@ const App = ({ params }) => {
               />
               {imageDataDeletable && (
                 <button
-                  className=' self-start'
+                  className=' self-start text-black'
                   onClick={() => setImageData(null)}
                 >
                   <p>X</p>

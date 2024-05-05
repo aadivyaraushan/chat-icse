@@ -12,6 +12,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang='en'>
       <body className={inter.className}>{children}</body>
+      <p className='text-xs bg-black text-white'>
+        Created by Aadivya Raushan © 2024
+      </p>
     </html>
   );
 }

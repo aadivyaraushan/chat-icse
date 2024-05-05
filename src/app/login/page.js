@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { app, db } from '../../lib/firebase';
 import { setDoc, doc, addDoc } from 'firebase/firestore';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,6 +20,7 @@ export default function LogIn() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const auth = getAuth(app);
+  const analytics = getAnalytics(app);
 
   const onSubmit = async () => {
     let errorThrown = false;
@@ -34,6 +36,7 @@ export default function LogIn() {
       setError(`${error.message.substring(10)}`);
     }
     if (!errorThrown) {
+      logEvent(analytics, 'login');
       router.push('subjects');
     }
   };

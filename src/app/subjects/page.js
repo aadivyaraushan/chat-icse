@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { app } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAnalytics, logEvent } from 'firebase/analytics';
 const inter = Inter({ subsets: ['latin'] });
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -23,6 +24,7 @@ const Subjects = () => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [subjects, setSubjects] = useState([]);
+  const analytics = getAnalytics(app);
 
   const onSubmit = async (subject) => {
     console.log(subject);
@@ -55,6 +57,7 @@ const Subjects = () => {
     // and the initial topic is set to be like empty.
     // ok makes sense.
     // route to the user's latest chat
+    logEvent(analytics, 'app_opened');
     router.push(`chat/${subject}/${latestId}/${isVariation}`);
   };
 
@@ -94,15 +97,16 @@ const Subjects = () => {
         >
           Math
         </button> */}
-        {subjects.map((subject, index) => (
-          <button
-            className='m-4 bg-zinc-900 p-2 rounded-xl'
-            onClick={() => onSubmit(subject)}
-            key={index}
-          >
-            {subject}
-          </button>
-        ))}
+        {subjects &&
+          subjects.map((subject, index) => (
+            <button
+              className='m-4 bg-zinc-900 p-2 rounded-xl'
+              onClick={() => onSubmit(subject)}
+              key={index}
+            >
+              {subject}
+            </button>
+          ))}
         <button
           className='m-4 bg-zinc-900 p-2 rounded-xl'
           onClick={() => setShowModal(true)}
