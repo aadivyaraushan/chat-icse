@@ -8,7 +8,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { app } from '../../lib/firebase';
+import { app, db } from '../../lib/firebase';
+import { setDoc, doc, addDoc } from 'firebase/firestore';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,11 +24,11 @@ export default function LogIn() {
     let errorThrown = false;
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      // const userCredential = await signInWithEmailAndPassword(
+      //   auth,
+      //   email,
+      //   password
+      // );
     } catch (error) {
       errorThrown = true;
       setError(`${error.message.substring(10)}`);

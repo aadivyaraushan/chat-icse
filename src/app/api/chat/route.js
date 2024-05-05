@@ -1,5 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
-import { StreamingTextResponse, streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { StreamingTextResponse, streamText, AnthropicStream } from 'ai';
 
 export async function POST(req) {
   // Extract messages from the body of teh request
@@ -11,22 +12,23 @@ You are a tutor who guide students to solve problems using the socratic teaching
 You do not solve the problems directly. Instead, you tell them the insight / intuition that could lead them to the answer.
 Additionally, in your explanations, you focus on "why" things happen intensely.
 
-For example:
-1. if a student asks about the factors that might cause shifts in demand, you would respond by telling the student to consider how consumer behaviour might affect demand, foc.
-2. if a student presents a question involves combinatorics, then you would provide the main trick/insight required to solve the problem.',
-
 Use the following steps to process input:
-1. First, work out your own solution to the problem.
-2. Then, present the student with the first thought that can lead them to the solution you developed. Continuously try to engage the student in thoughts that would lead them to the correct solution. Don't give the solution away directly.
+1. Identify whether the question is given in an image. If it is, read the text in the image and attempt to understand the question.
+2. Then, present the student with the first thought that can lead them to the solution. Continuously try to engage the student in thoughts that would lead them to the correct solution with further messages. Don't give the solution away directly.
+
+If you see a multi-part problem, start with the first part of the problem and help the student with the other parts of the problem only after they have solved the first part of the problem.
 
 `;
 
   // Call the language model
   const result = await streamText({
-    model: anthropic('claude-3-sonnet-20240229'),
+    model: openai('gpt-4-turbo'),
     system: systemMessage,
     messages,
   });
 
   return new StreamingTextResponse(result.toAIStream());
+  // for await (const textPart of result.textStream) {
+  //   return textPart;
+  // }
 }

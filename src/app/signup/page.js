@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { app } from '../../lib/firebase';
+import { getFirestore, setDoc, doc } from 'firebase/firestore';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -14,6 +15,7 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
   const onSubmit = async () => {
     let errorThrown = false;
@@ -23,7 +25,12 @@ export default function SignUp() {
         email,
         password
       );
+      console.log(email);
       const user = userCredential.user;
+      await setDoc(doc(db, 'users', email), {
+        topics: [''],
+      });
+      console.log('user doc created');
       console.log('user signed up');
     } catch (error) {
       errorThrown = true;

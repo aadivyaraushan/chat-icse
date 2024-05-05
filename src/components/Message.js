@@ -12,7 +12,6 @@ const Message = ({ isFromUser, children }) => {
         }  w-72 bg-zinc-800 p-3 rounded-3xl m-2 text-${
           isFromUser ? 'right' : 'left'
         } max-w-xs`}
-        dangerouslySetInnerHTML={{ __html: children }}
       >
         <p>{children}</p>
       </div>
