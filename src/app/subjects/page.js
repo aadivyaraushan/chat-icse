@@ -17,14 +17,14 @@ import { app } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 const inter = Inter({ subsets: ['latin'] });
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 const Subjects = () => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
   const onSubmit = async (subject) => {
     console.log(subject);
@@ -63,7 +63,9 @@ const Subjects = () => {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
+      console.log('user: ', user);
       if (user) {
+        console.log('new user email: ', user.email);
         const setUserSubjects = async () => {
           if (auth?.currentUser?.email) {
             const email = auth?.currentUser?.email;
@@ -84,6 +86,10 @@ const Subjects = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    console.log(subjects);
+  }, [subjects]);
 
   return (
     <main

@@ -114,6 +114,10 @@ const App = ({ params }) => {
     handleSubmit(e);
   };
 
+  useEffect(() => {
+    console.log(imageDataDeletable);
+  }, []);
+
   // console.log([
   //   ...messages,
   //   {
@@ -539,9 +543,9 @@ const App = ({ params }) => {
                 alt='Pasted Image'
                 className=' h-44 rounded-xl m-2'
               />
-              {imageDataDeletable && (
+              {imageDataDeletable === true && (
                 <button
-                  className=' self-start text-black'
+                  className=' self-start text-white'
                   onClick={() => setImageData(null)}
                 >
                   <p>X</p>

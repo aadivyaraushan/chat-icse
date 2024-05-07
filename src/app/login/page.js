@@ -26,11 +26,11 @@ export default function LogIn() {
     let errorThrown = false;
 
     try {
-      // const userCredential = await signInWithEmailAndPassword(
-      //   auth,
-      //   email,
-      //   password
-      // );
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
     } catch (error) {
       errorThrown = true;
       setError(`${error.message.substring(10)}`);
