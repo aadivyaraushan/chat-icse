@@ -24,7 +24,7 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
   const onSubmit = async () => {
     // create new starter conversation
     const docSnap = await getDoc(doc(db, 'users', auth?.currentUser?.email));
-    console.log(docSnap);
+    console.log('docsSnap: ', docSnap.data());
     const subjectsPrev = await docSnap.data().subjects;
     console.log(subjectsPrev);
     for (let i = 0; i < subjectsPrev; i++) {

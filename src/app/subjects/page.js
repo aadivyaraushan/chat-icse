@@ -12,6 +12,7 @@ import {
   getFirestore,
   query,
   where,
+  addDoc,
 } from 'firebase/firestore';
 import { app } from '../../lib/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -31,6 +32,7 @@ const Subjects = () => {
     console.log(auth?.currentUser?.email);
     // access the user's latest topic
     const userDoc = await getDoc(doc(db, 'users', auth?.currentUser?.email));
+
     const latestTopic = userDoc.data().topics[userDoc.data().topics.length - 1];
     console.log(latestTopic);
 
@@ -48,7 +50,7 @@ const Subjects = () => {
     // const isVariation = querySnapshot.docs[0].isVariation;
     let isVariation = false;
     querySnapshot.forEach((doc) => (isVariation = doc.data().isVariation));
-
+    console.log('ID: ', querySnapshot.docs[0]);
     const latestId = querySnapshot.docs[0].id;
     // ok if the user has no chats at all then they would start with there being no latest topic right
     // actually hmm i have to figure out this architecture

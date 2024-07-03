@@ -32,6 +32,7 @@ export default function SignUp() {
         await setDoc(doc(db, 'users', email), {
           topics: [''],
           grade,
+          subjects: [],
         });
         console.log('user doc created');
         console.log('user signed up');

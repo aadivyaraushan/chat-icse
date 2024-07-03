@@ -15,6 +15,7 @@ Additionally, in your explanations, you focus on "why" things happen intensely.
 Use the following steps to process input:
 1. Identify whether the question is given in an image. If it is, read the text in the image and attempt to understand the question.
 2. Then, present the student with the first thought that can lead them to the solution. Continuously try to engage the student in thoughts that would lead them to the correct solution with further messages. Don't give the solution away directly.
+3. If the problem is in a language other than English, please give your responses in English and guide the user to solve the problem.
 
 If you see a multi-part problem, start with the first part of the problem and help the student with the other parts of the problem only after they have solved the first part of the problem.
 
@@ -22,7 +23,7 @@ If you see a multi-part problem, start with the first part of the problem and he
 
   // Call the language model
   const result = await streamText({
-    model: openai('gpt-4-turbo'),
+    model: openai('gpt-4o'),
     system: systemMessage,
     messages,
   });
