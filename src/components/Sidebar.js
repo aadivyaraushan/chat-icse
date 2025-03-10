@@ -55,7 +55,7 @@ const Sidebar = ({ subject }) => {
     window.addEventListener('mouseup', () => {
       isResizing.current = false;
     });
-  }, []);
+  }, [maxWidth, minWidth]);
 
   // Function to create a new chat conversation in Firestore
   const onAddNewConversation = async () => {
@@ -87,7 +87,7 @@ const Sidebar = ({ subject }) => {
     } else {
       setHidden(false);
     }
-  }, [width]);
+  }, [width, minWidth]);
 
   // Function to fetch user's chats from Firestore
   const loadChats = async (user) => {
@@ -128,7 +128,7 @@ const Sidebar = ({ subject }) => {
         );
       }
     });
-  }, []);
+  }, [auth, db]);
 
   // Function to handle clicking on a chat topic
   const onClickTopic = async (topic) => {

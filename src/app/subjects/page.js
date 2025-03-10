@@ -111,7 +111,7 @@ const Subjects = () => {
         setUserSubjects();
       }
     });
-  }, []);
+  }, [auth, db]);
 
   // Debug effect to log subjects whenever they change
   useEffect(() => {
