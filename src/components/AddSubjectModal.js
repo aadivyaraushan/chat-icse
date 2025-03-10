@@ -1,5 +1,8 @@
 'use client';
+
+// Firebase authentication import
 import { getAuth } from 'firebase/auth';
+// Firebase Firestore imports for database operations
 import {
   addDoc,
   collection,
@@ -8,32 +11,61 @@ import {
   updateDoc,
   getDoc,
 } from 'firebase/firestore';
+// React hooks
 import { useEffect, useState, useRef } from 'react';
+// Firebase app initialization
 import { app } from '@/lib/firebase';
+// Firebase analytics import
 import { getAnalytics, logEvent } from 'firebase/analytics';
 
+/**
+ * AddSubjectModal Component
+ * Modal dialog to add a new subject to the user's profile
+ * Creates a new chat document and updates the user's subject list
+ *
+ * @param {Object} props - Component props
+ * @param {boolean} props.showModal - Controls visibility of the modal
+ * @param {Function} props.setShowModal - Function to update modal visibility state
+ */
 const AddSubjectModal = ({ showModal, setShowModal }) => {
+  // State for tracking if user has available subject slots
   const [hasSlot, setHasSlot] = useState(true);
+  // State for subject name with default value
   const [subject, setSubject] = useState('Physics');
+  // State for curriculum type with default value
   const [curriculum, setCurriculum] = useState('IB');
+  // State for error messages during submission
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Initialize Firebase services
   const db = getFirestore(app);
   const auth = getAuth(app);
   const analytics = getAnalytics(app);
 
+  /**
+   * Form submission handler
+   * Creates a new chat document for the subject
+   * Updates the user's subjects list in their profile
+   * Shows error if subject already exists
+   */
   const onSubmit = async () => {
-    // create new starter conversation
+    // Fetch current user document to get existing subjects
     const docSnap = await getDoc(doc(db, 'users', auth?.currentUser?.email));
     console.log('docsSnap: ', docSnap.data());
-    const subjectsPrev = await docSnap.data().subjects;
-    console.log(subjectsPrev);
-    for (let i = 0; i < subjectsPrev; i++) {
-      subjectsPrev[i] = subjectsPrev[i].toLowerCase();
+    const subjectsNew = await docSnap.data().subjects;
+    console.log(subjectsNew);
+
+    // Convert all subjects to lowercase for case-insensitive comparison
+    for (let i = 0; i < subjectsNew; i++) {
+      subjectsNew[i] = subjectsNew[i].toLowerCase();
     }
-    if (subjectsPrev.includes(`${curriculum}_${subject}`)) {
-      // give some error about subject repeating not allowed
+
+    // Check if subject already exists for this user
+    if (subjectsNew.includes(`${curriculum}_${subject}`)) {
+      // Display error if subject already exists
       setErrorMessage('You cannot repeat subjects');
     } else {
+      // Create new chat document for this subject
       const docRef = await addDoc(collection(db, 'chats'), {
         messages: [],
         subject: `${curriculum} ${subject}`,
@@ -47,31 +79,37 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
         'document added for new conversation in subject: ',
         docRef.id
       );
+
+      // Log subject creation event to analytics
       logEvent(analytics, 'subject_conversation_created', {
         subject,
       });
 
-      // add subject to user's subjects data
-
+      // Add subject to user's subjects list
       console.log(curriculum, subject);
+      subjectsNew.push(`${curriculum} ${subject}`);
 
-      subjectsPrev.push(`${curriculum} ${subject}`);
-
+      // Update user document with new subjects list
       await updateDoc(doc(db, 'users', auth?.currentUser?.email), {
-        subjects: subjectsPrev,
+        subjects: subjectsNew,
       });
 
+      // Close modal and refresh page to show new subject
       setShowModal(false);
       window.location.reload();
     }
   };
 
+  // Empty effect hook, possibly for future modal state handling
   useEffect(() => {}, [showModal]);
+
   return (
     <>
       {showModal ? (
         <>
+          {/* Modal container with dark background */}
           <div className='bg-zinc-900 rounded-3xl p-5 text-lg absolute inset-0 mx-auto my-auto w-96 h-96  '>
+            {/* Close button (X) */}
             <button
               onClick={() => {
                 setShowModal(false);
@@ -79,9 +117,14 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
             >
               <p>X</p>
             </button>
+
+            {/* Modal title */}
             <h1 className='text-3xl font-bold text-center'>Add Subject</h1>
+
+            {/* Conditional rendering based on available slots */}
             {hasSlot ? (
               <div className='flex flex-col '>
+                {/* Curriculum input field */}
                 <div className='flex flex-row justify-end items-center mt-3  '>
                   <label>Curriculum: </label>
                   <input
@@ -91,6 +134,8 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
                     }
                   ></input>
                 </div>
+
+                {/* Subject name input field */}
                 <div className='flex flex-row justify-end items-center mt-3  '>
                   <label>Name: </label>
                   <input
@@ -100,10 +145,8 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
                     }}
                   />
                 </div>
-                {/* <div className='flex flex-row justify-end mt-3'>
-                  <label>Textbook: </label>
-                  <input className='rounded-xl text-base  w-64' type='file' />
-                </div> */}
+
+                {/* Conditional error message display */}
                 {errorMessage !== '' && (
                   <div className='bg-red-800 rounded-xl p-3 m-3'>
                     <button
@@ -117,6 +160,8 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
                     {errorMessage}
                   </div>
                 )}
+
+                {/* Submit button */}
                 <div className='flex flex-row justify-center items-center'>
                   <button
                     className='bg-zinc-800 p-2 rounded-2xl mt-3'
@@ -127,19 +172,21 @@ const AddSubjectModal = ({ showModal, setShowModal }) => {
                 </div>
               </div>
             ) : (
+              /* Alternative content when user has no available slots */
               <div className='mt-3'>
                 <p>
                   To add another subject, please share the app with one other
                   user using the following link: (url)
                 </p>
                 <p className=' text-sm mt-4'>
-                  (you’ll be able to add another subject when they sign up)
+                  (you'll be able to add another subject when they sign up)
                 </p>
               </div>
             )}
           </div>
         </>
       ) : (
+        // Render nothing when modal is hidden
         <></>
       )}
     </>
