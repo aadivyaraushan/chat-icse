@@ -1,72 +1,68 @@
-'use client'; // Directive to mark this as a client-side component in Next.js
+'use client'; // Ensures this component runs only on the client side in Next.js
 
-import Image from 'next/image'; // Import the Next.js image component (imported but not used)
-import { Inter } from 'next/font/google'; // Import the Inter font from Google Fonts
+import { Inter } from 'next/font/google'; // Import Inter font from Google Fonts
 import { useRouter } from 'next/navigation'; // Import Next.js router for navigation
-import { useEffect, useState } from 'react'; // Import React hooks for state and effects
+import { useEffect, useState } from 'react'; // Import React hooks for state management
 import {
   getAuth,
-  createUserWithEmailAndPassword, // Import but not used in this component
-  signInWithEmailAndPassword, // Firebase auth for user login
+  signInWithEmailAndPassword, // Firebase authentication for signing in users
 } from 'firebase/auth';
-import { app, db } from '../../lib/firebase'; // Import Firebase app and database instances
-import { setDoc, doc, addDoc } from 'firebase/firestore'; // Import Firestore functions (not all used)
-import { getAnalytics, logEvent } from 'firebase/analytics'; // Import Firebase Analytics for tracking
+import { app } from '../../lib/firebase'; // Import Firebase app instance
+import { getAnalytics, logEvent } from 'firebase/analytics'; // Firebase Analytics for event tracking
+
 const inter = Inter({ subsets: ['latin'] }); // Initialize the Inter font with Latin subset
 
 export default function LogIn() {
-  // Initialize Next.js router for programmatic navigation
-  const router = useRouter();
+  const router = useRouter(); // Initialize Next.js router
 
-  // State for form fields and error handling
-  const [email, setEmail] = useState(''); // State to store user email input
-  const [password, setPassword] = useState(''); // State to store user password input
-  const [error, setError] = useState(''); // State to store authentication errors
+  // State for storing form input values and error messages
+  const [email, setEmail] = useState(''); // Stores the user email input
+  const [password, setPassword] = useState(''); // Stores the user password input
+  const [error, setError] = useState(''); // Stores authentication errors
+  const [isClient, setIsClient] = useState(false); // Ensures component runs only on the client
 
-  // Initialize Firebase services
-  const auth = getAuth(app); // Get Firebase authentication instance
-  const analytics = getAnalytics(app); // Get Firebase analytics instance
+  // Ensure the component is mounted on the client before executing Firebase-related logic
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  // Handle login form submission
+  // Handle login submission
   const onSubmit = async () => {
-    let errorThrown = false;
+    if (!isClient) return; // Prevent execution on the server
+
+    const auth = getAuth(app); // Get Firebase authentication instance
+    const analytics = getAnalytics(app); // Get Firebase analytics instance
+
     try {
       // Attempt to sign in using Firebase authentication
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(auth, email, password);
+      logEvent(analytics, 'login'); // Track login event in Firebase Analytics
+      router.push('subjects'); // Navigate to the subjects page upon successful login
     } catch (error) {
-      // Handle authentication errors
-;
       // Extract and display only the relevant part of the error message
-      setError(`${error.message.substring(10)}`);
-    }
-
-    // If login is successful, log the event and redirect to subjects page
-    if (!errorThrown) {
-      logEvent(analytics, 'login'); // Track successful login in Firebase Analytics
-      router.push('subjects'); // Navigate to subjects page
+      setError(error.message.substring(10));
     }
   };
 
+  // Prevents rendering on the server
+  if (!isClient) return null;
+
   return (
-    // Main container with full screen height, centered content, and styling
+    // Main container with full-screen height, centered content, and styling
     <main
       className={`flex min-h-screen flex-col items-center justify-center p-24 text-white text-2xl bg-black ${inter.className}`}
     >
       {/* Page title */}
-      <h1 className='text-6xl font-bold mb-1 '>Log In</h1>
+      <h1 className='text-6xl font-bold mb-1'>Log In</h1>
 
       {/* Form container with right-aligned inputs */}
       <div className='flex flex-col justify-center items-end mr-12'>
         {/* Email input field */}
-        <div className='mt-2 '>
-          <label className=''>Email: </label>
+        <div className='mt-2'>
+          <label>Email: </label>
           <input
             type='email'
-            className='rounded-lg bg-zinc-900 '
+            className='rounded-lg bg-zinc-900'
             onChange={(e) => setEmail(e.target.value)} // Update email state on change
             value={email} // Controlled component pattern
           />
@@ -85,9 +81,7 @@ export default function LogIn() {
       </div>
 
       {/* Conditional error message display */}
-      {error !== '' && (
-        <div className='mt-2 bg-red-500 rounded-xl p-2'>{error}</div>
-      )}
+      {error && <div className='mt-2 bg-red-500 rounded-xl p-2'>{error}</div>}
 
       {/* Submit button to trigger login */}
       <button className='bg-zinc-900 p-2 rounded-2xl mt-3' onClick={onSubmit}>
